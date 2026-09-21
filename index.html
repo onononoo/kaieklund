@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>kaieklund</title>
+</head>
+<body>
+
+<h1>kaieklund</h1>
+
+<p>i make a lot of stuff by hand. so please donate to me! :)</p>
+
+<p>btc:</p>
+
+<img id="qr" onclick="copyImg()" alt="btc address qr code"
+     style="border: 2px solid black; cursor: pointer; display: block;"
+     src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAN4AAADeAQAAAAB6HIMaAAABRElEQVR42u1YQQ7DIAyzxgP6JL7Ok3gAUhY7tNtlu86TihAKzcWKHMcU8Xkt3Mk76ZsEV9d9cE/eWyYf+LJ+kSTaBBaz524TCwzqoynaiTb7OljYBcZZanu0DBLwX6ANnqSrO1rxNuMkA8QEZ96WJrR5bWtN2EtkWOLAljdTJoyl2lK+MqY4+KKtoVCdlWdu6oMtWhGguMpBdvAM4y7T2cUHFCuc0VJjj0gCCDOcmQC11RLa0IBgYKxgEq50X10Eluoaa0KWl/D0RW7BlwkJ8pSCrQzeTBgyM2ouTbTNXlcPVgJ7DYhmjDaqp0oZ8Ba71rZGg3zCacm8PdglC00+x9zfCnDEfjsgvN8OLQZ2YaN5a0K9IkPnNmPeaHkR1Kpz2NeWsnBwCsPYg53/anApg3NtXwILulwVdoT5m/f+r3kn/yb5BK0PIPYQOBKnAAAAAElFTkSuQmCC">
+
+<p id="qrmsg">(click the qr to copy the image)</p>
+
+<div id="addr" onclick="copyAddr()" style="border: 2px solid black; padding: 20px; font-size: 20px; cursor: pointer; word-break: break-all;">
+bc1qvdtas4azfw7umdetl6t7q95ttw46ufugtmnm2l
+</div>
+
+<p id="msg">(click the box to copy)</p>
+
+<script>
+var ADDRESS = "bc1qvdtas4azfw7umdetl6t7q95ttw46ufugtmnm2l";
+var QRTEXT = "(click the qr to copy the image)";
+var ADDRTEXT = "(click the box to copy)";
+
+function flash(id, text, back) {
+  var el = document.getElementById(id);
+  el.textContent = text;
+  setTimeout(function () { el.textContent = back; }, 1500);
+}
+
+function copyAddr() {
+  function done() { flash("msg", "copied!", ADDRTEXT); }
+  function fallback() {
+    var ta = document.createElement("textarea");
+    ta.value = ADDRESS;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(ADDRESS).then(done, fallback);
+  } else {
+    fallback();
+  }
+}
+
+function copyImg() {
+  var canCopyImage = navigator.clipboard && window.ClipboardItem && window.isSecureContext;
+  if (!canCopyImage) {
+    flash("qrmsg", "cant copy images here - copied the address instead", QRTEXT);
+    copyAddrQuiet();
+    return;
+  }
+  var img = document.getElementById("qr");
+  var canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext("2d").drawImage(img, 0, 0);
+  canvas.toBlob(function (blob) {
+    navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(
+      function () { flash("qrmsg", "image copied!", QRTEXT); },
+      function () {
+        flash("qrmsg", "cant copy images here - copied the address instead", QRTEXT);
+        copyAddrQuiet();
+      }
+    );
+  }, "image/png");
+}
+
+function copyAddrQuiet() {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(ADDRESS);
+  } else {
+    var ta = document.createElement("textarea");
+    ta.value = ADDRESS;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+}
+</script>
+
+</body>
+</html>
