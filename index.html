@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>kaieklund</title>
+<link rel="icon" href="favicon.png">
 </head>
 <body>
 
 <h1>kaieklund</h1>
+
+<img src="kara.png" alt="kara" width="420">
 
 <p>i make a lot of stuff by hand. so please donate to me! :)</p>
 
@@ -40,14 +43,7 @@ function flash(id, text, back) {
 function copyAddr() {
   function done() { flash("msg", "copied!", ADDRTEXT); }
   function fallback() {
-    var ta = document.createElement("textarea");
-    ta.value = ADDRESS;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); done(); } catch (e) {}
-    document.body.removeChild(ta);
+    if (legacyCopy()) { done(); }
   }
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(ADDRESS).then(done, fallback);
@@ -56,43 +52,60 @@ function copyAddr() {
   }
 }
 
+function qrBlob() {
+  return new Promise(function (resolve) {
+    var img = document.getElementById("qr");
+    var canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext("2d").drawImage(img, 0, 0);
+    canvas.toBlob(resolve, "image/png");
+  });
+}
+
 function copyImg() {
-  var canCopyImage = navigator.clipboard && window.ClipboardItem && window.isSecureContext;
-  if (!canCopyImage) {
+  function fellBack() {
     flash("qrmsg", "cant copy images here - copied the address instead", QRTEXT);
     copyAddrQuiet();
+  }
+  if (!(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem && window.isSecureContext)) {
+    fellBack();
     return;
   }
-  var img = document.getElementById("qr");
-  var canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  canvas.getContext("2d").drawImage(img, 0, 0);
-  canvas.toBlob(function (blob) {
-    navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]).then(
+  try {
+    // ClipboardItem takes the promise, so write() runs inside the click's
+    // user activation - awaiting toBlob() first loses it and Chrome throws.
+    var item = new ClipboardItem({ "image/png": qrBlob() });
+    navigator.clipboard.write([item]).then(
       function () { flash("qrmsg", "image copied!", QRTEXT); },
-      function () {
-        flash("qrmsg", "cant copy images here - copied the address instead", QRTEXT);
-        copyAddrQuiet();
-      }
+      fellBack
     );
-  }, "image/png");
+  } catch (e) {
+    fellBack();
+  }
 }
 
 function copyAddrQuiet() {
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(ADDRESS);
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+    navigator.clipboard.writeText(ADDRESS).catch(legacyCopy);
   } else {
-    var ta = document.createElement("textarea");
-    ta.value = ADDRESS;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); } catch (e) {}
-    document.body.removeChild(ta);
+    legacyCopy();
   }
 }
+
+function legacyCopy() {
+  var ta = document.createElement("textarea");
+  ta.value = ADDRESS;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+  return ok;
+}
+
 </script>
 
 </body>
