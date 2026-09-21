@@ -3,7 +3,33 @@
 <head>
 <meta charset="utf-8">
 <title>kaieklund</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="favicon.png">
+<style>
+body {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+#qr {
+  width: 222px;
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  -webkit-tap-highlight-color: transparent;
+}
+#addr {
+  -webkit-tap-highlight-color: transparent;
+  user-select: all;
+}
+a { overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.6em; }
+  #addr { padding: 14px !important; font-size: 17px !important; }
+}
+</style>
 </head>
 <body>
 
